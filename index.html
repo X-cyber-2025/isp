@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SRS WiFi Dashboard</title>
+
+<!-- ZOOM COMPLETELY DISABLED -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<style>
+/* ---- ZOOM LOCK ---- */
+html, body {
+    touch-action: manipulation;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* ---------- BASE ---------- */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+}
+
+/* ---------- START SCREEN ---------- */
+#startScreen {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #ff9800, #ff6f00);
+}
+
+.start-btn {
+    padding: 22px 70px;
+    font-size: 28px;
+    font-weight: bold;
+    background: white;
+    color: #ff6f00;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.start-btn:hover {
+    transform: scale(1.05);
+}
+
+/* ---------- DASHBOARD ---------- */
+#dashboard {
+    display: none;
+}
+
+.header {
+    background: linear-gradient(180deg, #ff9800, #ff6f00);
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.circle {
+    width: 140px;
+    height: 140px;
+    background: white;
+    border-radius: 50%;
+    margin: 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: black;
+    font-weight: bold;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    color: white;
+}
+
+.card {
+    background: #e8f5e9;
+    margin: 20px;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.box {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 20px;
+}
+
+.box div {
+    background: white;
+    padding: 20px;
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- START SCREEN -->
+<div id="startScreen">
+    <button class="start-btn" onclick="openDashboard()">START</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+<div class="header">
+    <h2>Main Dashboard</h2>
+
+    <div class="circle">
+        <div id="networkType">--</div>
+        <div id="status">Checking</div>
+    </div>
+
+    <div class="stats">
+        <div>
+            <div id="down">--</div>
+            <small>Download</small>
+        </div>
+        <div>
+            <div id="up">--</div>
+            <small>Upload</small>
+        </div>
+    </div>
+</div>
+
+<div class="card" id="wifiName">--</div>
+
+<div class="box">
+    <!-- ADMIN ACCESS (WIFI ONLY) -->
+    <div onclick="openAdmin()">Admin Access</div>
+<div onclick="window.location.href='helpline.html'">Help Line</div>
+    <div>Guest WiFi</div>
+    <div>Security</div>
+    <div>Devices</div>
+    <div>More</div>
+</div>
+
+</div>
+
+<script>
+// ---------- START ----------
+function openDashboard() {
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+}
+
+// ---------- Speed Formatter ----------
+function formatSpeed(kbps) {
+    if (kbps < 1000) return kbps.toFixed(1) + " Kbps";
+    if (kbps < 1000000) return (kbps / 1000).toFixed(2) + " Mbps";
+    return (kbps / 1000000).toFixed(2) + " Gbps";
+}
+
+// ---------- INTERNET CHECK ----------
+async function hasInternet() {
+    try {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 3000);
+        await fetch("https://1.1.1.1/cdn-cgi/trace", {
+            signal: controller.signal,
+            cache: "no-store"
+        });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+// ---------- NETWORK TYPE ----------
+function detectNetwork() {
+    const net = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (!net) return "Unknown";
+    if (net.type === "wifi") return "Wi-Fi";
+    if (net.type === "cellular") return "Mobile Data";
+    return "Unknown";
+}
+
+// ---------- STATUS ----------
+async function updateStatus() {
+    const online = await hasInternet();
+    document.getElementById("networkType").innerText = detectNetwork();
+
+    if (!online) {
+        document.getElementById("status").innerText = "No Internet";
+        document.getElementById("down").innerText = "--";
+        document.getElementById("up").innerText = "--";
+        document.getElementById("wifiName").innerText = "Not Connected";
+        return;
+    }
+
+    document.getElementById("status").innerText = "Active";
+    document.getElementById("wifiName").innerText = "Connected";
+}
+
+// ---------- ADMIN ACCESS CONTROL (WIFI ONLY) ----------
+function openAdmin() {
+    const net = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+    if (!net) {
+        alert("Network type not detected");
+        return;
+    }
+
+    if (net.type !== "wifi") {
+        alert("Admin Access only works on Wi-Fi");
+        return;
+    }
+
+    window.location.href = "admin.html";
+}
+
+// ---------- Download Test ----------
+async function testDownload() {
+    try {
+        const size = 3000000;
+        const start = performance.now();
+        const res = await fetch("https://speed.cloudflare.com/__down?bytes=" + size, { cache: "no-store" });
+        await res.blob();
+        const end = performance.now();
+        const kbps = (size * 8) / ((end - start) / 1000) / 1000;
+        document.getElementById("down").innerText = formatSpeed(kbps);
+    } catch {
+        document.getElementById("down").innerText = "--";
+    }
+}
+
+// ---------- Upload Test ----------
+async function testUpload() {
+    try {
+        const size = 3000000;
+        const data = new Blob([new Uint8Array(size)]);
+        const start = performance.now();
+        await fetch("https://speed.cloudflare.com/__up", {
+            method: "POST",
+            body: data,
+            cache: "no-store"
+        });
+        const end = performance.now();
+        const kbps = (size * 8) / ((end - start) / 1000) / 1000;
+        document.getElementById("up").innerText = formatSpeed(kbps);
+    } catch {
+        document.getElementById("up").innerText = "--";
+    }
+}
+
+// ---------- AUTO REFRESH ----------
+setInterval(async () => {
+    const online = await hasInternet();
+    updateStatus();
+    if (online) {
+        testDownload();
+        testUpload();
+    }
+}, 5000);
+
+// initial
+updateStatus();
+</script>
+
+</body>
+</html>
