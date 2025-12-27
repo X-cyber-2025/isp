@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Help Line Support</title>
+
+<!-- ZOOM DISABLED -->
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<style>
+/* ===== ZOOM LOCK ===== */
+html,body{
+    height:100%;
+    margin:0;
+    touch-action:manipulation;
+    overscroll-behavior:none;
+    -webkit-text-size-adjust:100%;
+}
+
+/* ===== BASE ===== */
+*{box-sizing:border-box}
+body{
+    font-family:Arial,sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 20% 20%, #ff004c55, transparent 40%),
+      radial-gradient(circle at 80% 20%, #00eaff55, transparent 40%),
+      radial-gradient(circle at 50% 80%, #00ff8855, transparent 40%),
+      linear-gradient(135deg,#020617,#020617);
+    animation:bgMove 40s linear infinite;
+}
+
+/* VERY SLOW BACKGROUND */
+@keyframes bgMove{
+    0%{background-position:0% 0%}
+    50%{background-position:100% 100%}
+    100%{background-position:0% 0%}
+}
+
+/* ===== HEADER ===== */
+.header{
+    text-align:center;
+    color:#fff;
+    margin-bottom:14px;
+}
+.header h1{
+    margin:0;
+    font-size:24px;
+    letter-spacing:1px;
+}
+.header p{
+    margin:6px 0 0;
+    font-size:13px;
+    opacity:.85;
+}
+
+/* ===== CARD (ONE SCREEN FIT) ===== */
+.box{
+    width:92%;
+    max-width:420px;
+    padding:18px;
+    border-radius:20px;
+    background:rgba(255,255,255,.12);
+    backdrop-filter:blur(14px);
+    position:relative;
+    box-shadow:0 20px 50px rgba(0,0,0,.6);
+}
+
+/* VERY SLOW RGB BORDER */
+.box::before{
+    content:"";
+    position:absolute;
+    inset:-2px;
+    border-radius:22px;
+    background:linear-gradient(
+        90deg,
+        #ff004c,
+        #ffa500,
+        #00ff88,
+        #00eaff,
+        #a855f7,
+        #ff004c
+    );
+    background-size:400%;
+    z-index:-1;
+    animation:rgb 25s linear infinite;
+}
+@keyframes rgb{
+    0%{background-position:0%}
+    100%{background-position:400%}
+}
+
+/* ===== SECTION ===== */
+.section{
+    color:#fff;
+    font-size:16px;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+/* ===== BUTTON ===== */
+.btn{
+    width:100%;
+    padding:14px;
+    margin-top:8px;
+    border:none;
+    border-radius:14px;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+}
+.btn:active{transform:scale(.96)}
+
+.call{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    color:#052e16;
+}
+
+.send{
+    background:linear-gradient(135deg,#38bdf8,#0ea5e9);
+    color:#020617;
+}
+
+/* ===== INPUT (COMPACT) ===== */
+input,textarea{
+    width:100%;
+    margin-top:8px;
+    padding:12px;
+    font-size:14px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.9);
+    outline:none;
+}
+textarea{resize:none}
+
+/* ===== DIVIDER ===== */
+hr{
+    border:none;
+    border-top:1px dashed rgba(255,255,255,.4);
+    margin:14px 0;
+}
+
+/* ===== FOOTER ===== */
+.footer{
+    text-align:center;
+    font-size:12px;
+    color:#e5e7eb;
+    opacity:.85;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>HELP LINE</h1>
+    <p>২৪/৭ গ্রাহক সহায়তা ও অভিযোগ কেন্দ্র</p>
+</div>
+
+<div class="box">
+
+    <div class="section">Call Support</div>
+    <button class="btn call" onclick="location.href='tel:01634346706'">Call Support 1</button>
+    <button class="btn call" onclick="location.href='tel:01634346705'">Call Support 2</button>
+    <button class="btn call" onclick="location.href='tel:01634346704'">Call Support 3</button>
+
+    <hr>
+
+    <div class="section">WhatsApp Complaint</div>
+    <input id="name" placeholder="আপনার নাম">
+    <input id="phone" placeholder="ফোন নাম্বার">
+    <input id="address" placeholder="ঠিকানা">
+    <textarea id="problem" rows="3" placeholder="সমস্যার বিস্তারিত লিখুন"></textarea>
+
+    <button class="btn send" onclick="sendComplaint()">অভিযোগ পাঠান</button>
+
+    <div class="footer">
+        আপনার অভিযোগ সরাসরি WhatsApp সাপোর্টে যাবে
+    </div>
+
+</div>
+
+<script>
+function sendComplaint(){
+    const name=document.getElementById("name").value.trim();
+    const phone=document.getElementById("phone").value.trim();
+    const address=document.getElementById("address").value.trim();
+    const problem=document.getElementById("problem").value.trim();
+
+    if(!name||!phone||!address||!problem){
+        alert("সব তথ্য পূরণ করুন");
+        return;
+    }
+
+    const message=
+"নতুন অভিযোগ\n"+
+"নাম: "+name+"\n"+
+"ফোন: "+phone+"\n"+
+"ঠিকানা: "+address+"\n"+
+"সমস্যা: "+problem;
+
+    const whatsappNumber="8801925681872";
+
+    window.open(
+        "https://wa.me/"+whatsappNumber+
+        "?text="+encodeURIComponent(message),
+        "_blank"
+    );
+}
+</script>
+
+</body>
+</html>
